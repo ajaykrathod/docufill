@@ -1,0 +1,10 @@
+.TextResizer {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  visibility: hidden;
+  z-index: -1;
+  display: inline-block;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,36 @@
+.GraphWrapper {
+  display: none;
+  width: 100%;
+  position: relative;
+}
+
+.GraphWrapper[data-showing="editor"] {
+  display: block;
+}
+
+@media (max-width: 799px) {
+  .GraphWrapper {
+    grid-area: main;
+    background-color: var(--color-background);
+    z-index: -1;
+  }
+
+  [data-selected-tab="Graph"] .GraphWrapper {
+    z-index: 1;
+  }
+}
+@media (min-width: 800px) {
+  .GraphWrapper {
+    display: block !important;
+  }
+}
+
+.GraphWrapperInner {
+  @apply h-full;
+}
+
+.GraphWrapper[data-is-fullscreen="true"] {
+  padding: 0 !important;
+  display: block;
+  z-index: 1;
+}

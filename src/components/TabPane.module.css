@@ -1,0 +1,45 @@
+@media (max-width: 799px) {
+  .TextareaContainer {
+    /* display: none; */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: 100% !important;
+    overflow: hidden;
+    grid-area: main;
+    background-color: var(--color-background);
+  }
+
+  .Handle {
+    display: none !important;
+  }
+}
+
+.Handle {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.Handle svg circle {
+  stroke-width: 10;
+  stroke: var(--color-foreground);
+}
+
+.Handle:hover svg circle,
+.Handle[data-dragging="true"] svg circle {
+  stroke: var(--color-foreground);
+}
+.Handle:hover,
+.Handle[data-dragging="true"] {
+  background: linear-gradient(
+    to bottom,
+    var(--color-background),
+    var(--color-uiAccent),
+    var(--color-background)
+  );
+}
+
+.resizableHandle {
+  background-color: var(--color-background);
+}

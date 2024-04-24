@@ -1,0 +1,13 @@
+@keyframes load {
+  from {
+    stroke-dashoffset: var(--d);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.Spinner circle {
+  animation: load 1s cubic-bezier(0.11, 0.21, 0.77, 0.86) 0s infinite forwards;
+  stroke: var(--c);
+}

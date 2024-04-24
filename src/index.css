@@ -1,0 +1,458 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+html body {
+  margin-right: 0 !important;
+}
+
+/* Scroll Bar */
+
+#chatContainer::-webkit-scrollbar {
+  width: 10px;
+}
+
+#chatContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+#chatContainer::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+#chatContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+.node-hover {
+  background: var(--color-lineColor);
+}
+
+.view-line {
+  box-shadow: inset 0px 0px 0px 0px var(--color-uiAccent);
+  font-variant-numeric: tabular-nums;
+  transition: box-shadow 100ms ease;
+}
+
+.view-line::after {
+  width: 100%;
+  content: " ";
+  height: 1px;
+  background-color: var(--color-lineColor);
+  display: block;
+  position: absolute;
+  top: calc(100% - 1px);
+  z-index: -1;
+}
+
+.monaco-editor .line-numbers {
+  color: var(--color-lineNumbers) !important;
+  font-size: 13px;
+}
+
+.monaco-editor,
+.monaco-editor-background,
+.monaco-editor .inputarea.ime-input {
+  background: none !important;
+}
+
+.errorMessage {
+  padding: 1rem;
+  background-color: var(--color-nodeHover);
+  font-size: 1rem;
+}
+
+.errorWrapper {
+  display: grid;
+  height: 100%;
+  place-content: center;
+}
+
+.errorWrapper > div {
+  display: grid;
+  gap: 1rem;
+}
+
+.errorWrapper button {
+  border: 1px solid var(--color-edgeHover);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 1rem;
+  border-radius: 2px;
+}
+
+button {
+  background-color: transparent;
+  color: var(--color-foreground);
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+button:active {
+  outline: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.monaco-editor .margin {
+  background-color: transparent !important;
+}
+
+.brand {
+  border-right: 1px solid var(--color-uiAccent);
+}
+.brand svg path {
+  fill: var(--color-foreground);
+}
+
+div[data-reach-dialog-content] {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  width: 90vw;
+  overflow: auto;
+  margin: 5vh auto;
+}
+
+@media (min-width: 800px) {
+  div[data-reach-dialog-content] {
+    width: 60vw;
+    max-width: 600px;
+    margin: 10vh auto;
+  }
+}
+
+div[data-reach-dialog-overlay] {
+  background: hsla(var(--color-overlayColor), 0.5);
+  z-index: 1;
+}
+
+div[data-reach-tooltip] {
+  background-color: var(--color-nodeHover);
+  border-color: var(--color-nodeHover);
+  box-shadow: none;
+  border-radius: 2px;
+  color: var(--color-foreground);
+  padding: 0 calc(1 * var(--spacer-px));
+}
+
+@media (max-width: 799px) {
+  div[data-reach-tooltip] {
+    display: none !important;
+  }
+}
+
+.slang-type:not(.size-1):not(.size-2):not(.size-3):not(.size-4):not(.size-5):not(.size-6):not(.size--1) {
+  letter-spacing: 0.0125em;
+}
+
+.slang-type.size--1 {
+  letter-spacing: 0.015em;
+}
+
+.slang-type.size--3 {
+  letter-spacing: -0.025em;
+}
+
+/** Completely Hide Editor Actions */
+.monaco-editor .monaco-hover .hover-row.status-bar .actions {
+  display: none;
+}
+.monaco-editor .monaco-hover .monaco-hover-content .marker.hover-contents {
+  @apply font-sans text-sm p-4 rounded !important;
+}
+
+/** The code blocks inside the editor error description */
+.editor-error code {
+  @apply font-mono text-xs p-1 text-red-900 rounded bg-red-100 inline-block;
+}
+
+/** Text-wrap balance utility */
+.text-wrap-balance {
+  text-wrap: balance;
+}
+
+#theme-editor-wrapper > section {
+  overflow: hidden;
+}
+
+#theme-editor-wrapper > section[data-hovering="true"] {
+  overflow: visible;
+}
+
+.text-shadow {
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.125);
+}
+
+
+/**
+Hide the monaco editor slider
+**/
+main .monaco-editor {
+  --vscode-scrollbarSlider-background: transparent;
+  --vscode-scrollbarSlider-hoverBackground: transparent;
+  --vscode-scrollbarSlider-activeBackground: transparent;
+}
+
+.theme-editor-monaco .monaco-editor {
+  --vscode-scrollbarSlider-background: rgba(0, 0, 0, 0.25);
+  --vscode-scrollbarSlider-hoverBackground: rgba(0, 0, 0, 0.25);
+  --vscode-scrollbarSlider-activeBackground: rgba(0, 0, 0, 0.25);
+
+  --vscode-editor-background: transparent;
+  --vscode-editorGutter-background: transparent;
+  --vscode-editorMarkerNavigation-background: transparent;
+  --vscode-input-background: transparent;
+}
+
+.theme-tab::-webkit-scrollbar {
+  @apply w-2;
+}
+.theme-tab::-webkit-scrollbar-button {
+  height: 0;
+}
+
+.theme-tab::-webkit-scrollbar-track {
+  @apply bg-neutral-200 dark:bg-neutral-900;
+}
+.theme-tab::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 dark:bg-neutral-800;
+}
+
+.import-file-textarea::after {
+  content: " ";
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  left: 0;
+  @apply bg-gradient-to-b from-transparent to-white dark:to-neutral-900;
+}
+
+[data-radix-popper-content-wrapper] {
+  @apply z-10;
+}
+
+@keyframes tilt-shaking {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(8deg);
+  }
+  50% {
+    transform: rotate(0eg);
+  }
+  75% {
+    transform: rotate(-8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.group:hover .group-hover-tilt-shaking {
+  animation: tilt-shaking 0.25s ease-in-out 2;
+}
+
+.ToastRoot[data-swipe="move"] {
+  transform: translateX(var(--radix-toast-swipe-move-x));
+}
+.ToastRoot[data-swipe="cancel"] {
+  transform: translateX(0);
+  transition: transform 200ms ease-out;
+}
+.ToastRoot[data-swipe="end"] {
+  animation: slideRight 100ms ease-out;
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.checkout-wrapper {
+  background-blend-mode: normal;
+  background: radial-gradient(circle, #8252eb, #8252eb 20%, #baabf2 120%) 0 0/100%
+    100%;
+}
+
+body.dark .checkout-wrapper {
+  background-blend-mode: normal;
+  background-color: #0000;
+  background-image: radial-gradient(
+      circle,
+      #8252eb8a,
+      #8252eb8a 0%,
+      #44108a5e 63%
+    ),
+    conic-gradient(at 0 100%, #000, #000 30deg);
+  background-position: 0 0;
+  background-repeat: repeat, repeat;
+  background-size: 100% 100%;
+  background-attachment: scroll, scroll;
+  background-origin: padding-box, padding-box;
+  background-clip: border-box, border-box;
+}
+
+/**
+* Add 3d effect to the product video based on mouse cursor location using CSS
+and --mouse-x
+--mouse-y custom properties
+*/
+.pricing-video {
+  transform: perspective(200px) rotateY(calc(var(--mouse-x) * 1deg))
+    rotateX(calc(var(--mouse-y) * -1deg));
+  transition: transform 0.1s ease-out;
+}
+
+.feature:nth-child(1) {
+  --hover-accent: theme("colors.purple.300");
+}
+.feature:nth-child(2) {
+  --hover-accent: theme("colors.green.300");
+}
+.feature:nth-child(3) {
+  --hover-accent: theme("colors.orange.300");
+}
+.feature:nth-child(4) {
+  --hover-accent: theme("colors.blue.300");
+}
+
+.feature::after {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  mix-blend-mode: multiply;
+  background-blend-mode: darken;
+  background-color: #0000;
+  background-image: radial-gradient(
+      circle at 50% 125%,
+      var(--hover-accent),
+      var(--hover-accent) 0%,
+      #fff 21%
+    ),
+    radial-gradient(
+      circle at 50% 125%,
+      var(--hover-accent),
+      var(--hover-accent) 0%,
+      #fff 49%
+    );
+  background-position: 0 0;
+  background-repeat: repeat, repeat;
+  background-size: 100% 100%;
+  background-attachment: scroll, scroll;
+  background-origin: padding-box, padding-box;
+  background-clip: border-box, border-box;
+
+  @apply transition-opacity duration-[400ms];
+}
+
+.feature:hover::after {
+  opacity: 1;
+}
+
+/* body.dark .feature::after {
+  background-blend-mode: screen;
+  background-color: #0000;
+  background-image: radial-gradient(
+      circle at 50% 125%,
+      #baabf2,
+      #baabf2 0%,
+      #000 21%
+    ),
+    radial-gradient(circle at 50% 125%, #baabf2, #baabf2 0%, #000 49%);
+  background-position: 0 0;
+  background-repeat: repeat, repeat;
+  background-size: 100% 100%;
+  background-attachment: scroll, scroll;
+  background-origin: padding-box, padding-box;
+  background-clip: border-box, border-box;
+} */
+
+.pricing-feature-img {
+  transform: translateX(-50%) translateZ(0px);
+}
+
+.pricing-highlights {
+  background-blend-mode: normal;
+  background-color: #0000;
+  background-image: linear-gradient(#ffffff80, #ffffff80 0%, #fff 100%),
+    repeating-linear-gradient(
+      100deg,
+      #f6f6f600,
+      #f6f6f600 32px,
+      #e3dff3 32px 33px
+    ),
+    repeating-linear-gradient(
+      10deg,
+      #f6f6f600,
+      #f6f6f600 32px,
+      #e3dff3 32px 33px
+    ),
+    linear-gradient(90deg, #f5f4f91f, #f5f4f91f 30px);
+  background-position: 0 0;
+  background-repeat: repeat, repeat, repeat, repeat;
+  background-size: 100% 100%;
+  background-attachment: scroll, scroll, scroll, scroll;
+  background-origin: padding-box, padding-box, padding-box, padding-box;
+  background-clip: border-box, border-box, border-box, border-box;
+}
+
+body.dark .pricing-highlights {
+  background-blend-mode: normal;
+  background-color: #0000;
+  background-image: linear-gradient(#0f0f0f00, #0f0f0f00 0%, #0f0f0f 100%),
+    repeating-linear-gradient(
+      100deg,
+      #0f0f0f00,
+      #0f0f0f00 32px,
+      #5312ab75 32px 33px
+    ),
+    repeating-linear-gradient(
+      10deg,
+      #f6f6f600,
+      #f6f6f600 32px,
+      #5312ab75 32px 33px
+    ),
+    linear-gradient(90deg, #0f0f0f, #0f0f0f 30px);
+  background-position: 0 0;
+  background-repeat: repeat, repeat, repeat, repeat;
+  background-size: 100% 100%;
+  background-attachment: scroll, scroll, scroll, scroll;
+  background-origin: padding-box, padding-box, padding-box, padding-box;
+  background-clip: border-box, border-box, border-box, border-box;
+}
