@@ -7,7 +7,6 @@ import { CircleNotch, Database, File, FileCsv, Warning } from "phosphor-react";
 import { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useMutation } from "react-query";
-import { ImportDataFormType } from "shared";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -309,14 +308,14 @@ const MappingData = () => {
     [columnSelectionValues]
   );
   const columnValues = useImportData((state) => state.columnValues);
-  const [formState, setFormState] = useState<ImportDataFormType>({
+  const [formState, setFormState] = useState<any>({
     idColumn: columnNames[0],
     nodeLabelColumn: columnNames[0],
     edgesDeclared: "none",
   });
 
   const handleFormChange = (name: string, value: string) => {
-    setFormState((prevState) => ({ ...prevState, [name]: value }));
+    setFormState((prevState: any) => ({ ...prevState, [name]: value }));
   };
 
   const processingErrorMessage = useImportData(
@@ -325,7 +324,7 @@ const MappingData = () => {
 
   const onSubmit = useMutation(
     "process-data",
-    async (formState: ImportDataFormType) => {
+    async (formState: any) => {
       await fetch("/api/data/process", {
         method: "POST",
         headers: {
