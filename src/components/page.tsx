@@ -94,7 +94,7 @@ export default function Home() {
       },
       body: JSON.stringify(data),
     };
-    const response = await fetch("http://localhost:5000/stream_words", options);
+    const response = await fetch("https://docufill.community.saturnenterprise.io/stream_words", options);
 
     if (response.body) {
       const reader = response.body.getReader();
@@ -444,7 +444,7 @@ export default function Home() {
 
         // Make POST request to the server to convert the file to PDF
         const response = await axios.post(
-          "http://localhost:5000/getFile",
+          "https://docufill.community.saturnenterprise.io/getFile",
           requestOptions,
           {
             responseType: "blob",
@@ -533,7 +533,7 @@ export default function Home() {
     };
 
     axios
-      .post("http://localhost:5000/downloadFile", requestOptions, {
+      .post("https://docufill.community.saturnenterprise.io/downloadFile", requestOptions, {
         responseType: "blob"
       })
       .then((res) => {
