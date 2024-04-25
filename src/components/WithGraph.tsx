@@ -10,7 +10,6 @@ import styles from "./WithGraph.module.css";
 import TabPane from "./TabPane";
 import { useMobileStore } from "../lib/useMobileStore";
 import { useTabsStore } from "../lib/useTabsStore";
-import { useFlowStore } from "../lib/useFlowStore";
 
 type MainProps = {
   children?: ReactNode;

@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "react-query";
 
 import { Warning } from "../components/Warning";
-import { isError } from "../lib/helpers";
 import { supabase } from "../lib/supabaseClient";
 import { Button2, InputWithLabel, P, Page } from "../ui/Shared";
 import { PageTitle } from "../ui/Typography";
@@ -103,7 +102,6 @@ export default function Login() {
 
   return (
     <Page size="sm">
-      {showAuthWallWarning && <AuthWallWarning />}
       <PageTitle className="text-center mb-6">{t`Sign In`}</PageTitle>
       <Button2
         leftIcon={<GoogleSVG />}

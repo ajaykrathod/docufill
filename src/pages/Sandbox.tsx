@@ -6,7 +6,6 @@ import { useLocation } from "react-router-dom";
 import { ClearTextButton } from "../components/ClearTextButton";
 import EditorError from "../components/EditorError";
 import { Actions } from "../components/Actions";
-import { FlowchartHeader } from "../components/FlowchartHeader";
 import WithGraph from "../components/WithGraph";
 import { EditorTabList } from "../components/Tabs/EditorTabList";
 
@@ -20,7 +19,6 @@ import { useTrackLastChart } from "../lib/useLastChart";
 import styles from "./Sandbox.module.css";
 import { useTabsStore } from "../lib/useTabsStore";
 import { newDelimiters, SANDBOX_STORAGE_KEY } from "../lib/constants";
-import { SandboxWarning } from "../components/SandboxWarning";
 import { useSandboxWarning } from "../lib/useSandboxWarning";
 import { LoadFromHashDialog } from "../components/LoadFromHashDialog";
 import { useIsProUser } from "../lib/hooks";
@@ -112,7 +110,6 @@ const Sandbox = memo(function Edit({ editorText,handleChange }: props) {
   return (
     <>
       <FlowchartLayout>
-        {/* <FlowchartHeader /> */}
         <Tabs.Root
           value={selectedTab}
           className={styles.Tabs}

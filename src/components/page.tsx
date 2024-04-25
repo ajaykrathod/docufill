@@ -2,13 +2,12 @@ import { ChangeEvent, MouseEvent, lazy, useEffect, useState } from "react";
 import ChatComponent from "./ChatComponent";
 import axios from "axios";
 import PdfViewer from "./PDFViewer";
-import { FlowArrow } from "phosphor-react";
-import { useDoc } from "../lib/useDoc";
 import { FaAngleDoubleLeft } from "react-icons/fa";
 import { RiMenuUnfoldLine } from "react-icons/ri";
 import { BiSolidSend } from "react-icons/bi";
 import { RiChatNewFill } from "react-icons/ri";
-import { v4 as uuidv4 } from "uuid";
+import { BsEscape } from "react-icons/bs";
+import { HiDotsHorizontal } from "react-icons/hi";
 import { auth, db } from "../utils/firebase";
 import {
   addDoc,
@@ -41,6 +40,7 @@ export default function Home() {
   const [isResearchPaper, setIsResearchPaper] = useState<boolean>(false)
   const [promptSubmitted, setPromptSubmitted] = useState<boolean>(false)
   const [title, setTitle] = useState<string>("");
+  const [paperType, setPaperType] = useState<string>("")
   const [pdfUrl, setPdfUrl] = useState<Uint8Array|string>();
   const [showMenu, setShowMenu] = useState<boolean>(true);
   const [newChat, setNewChat] = useState<boolean>(true);
@@ -55,10 +55,10 @@ export default function Home() {
   const [sections, setSections] = useState<any[][]>([
     ["Abstract", 400],
     ["Introduction", 900],
-    ["Related Work", 500],
-    ["Proposed Method", 500],
+    ["Related Work", 700],
+    ["Proposed Method", 1000],
     ["Diagram", 0],
-    ["Experiments", 400],
+    ["Experiments", 600],
     ["Conclusion", 400],
   ]);
   const [ind, setInd] = useState<number>(0);
@@ -94,7 +94,7 @@ export default function Home() {
       },
       body: JSON.stringify(data),
     };
-    const response = await fetch("https://docufill.community.saturnenterprise.io/stream_words", options);
+    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/stream_words`, options);
 
     if (response.body) {
       const reader = response.body.getReader();
@@ -280,13 +280,13 @@ export default function Home() {
     }
     
     if (!existingChat && newChat) {
-      // const chatUID = uuidv4()
       // setChatID(chatUID)
       if (auth.currentUser?.uid) {
         const docRef = await addDoc(collection(db, auth.currentUser.uid), {
           title: prompt,
           lastUpdated: Date.now(),
-          chat: [],
+          type: (tempDecided || isDecided) && isResearchPaper ? "Research Paper" : "Report" ,
+          chat: []
         });
         setChatID(docRef.id);
       }
@@ -396,38 +396,29 @@ export default function Home() {
 
       // formData.append('canvasImage', blob, 'canvasImage.png');
       const data = {
+        title:title?title:prompt,
         file_name: `${
           title ? title.replaceAll(" ", "") : prompt.replaceAll(" ", "")
         }`,
         chats: blobChats,
+        type:paperType
       };
 
       setChats(originalChats);
       return data;
     } else {
       return {
+        title:title?title:prompt,
         file_name: `${
           title ? title.replaceAll(" ", "") : prompt.replaceAll(" ", "")
         }`,
         chats: allChats,
+        type:paperType
       };
     }
   };
 
-  const base64toBlob = (data: string) => {
-    // Cut the prefix `data:application/pdf;base64` from the raw base 64
-    const base64WithoutPrefix = data.substr('data:application/pdf;base64,'.length);
 
-    const bytes = atob(base64WithoutPrefix);
-    let length = bytes.length;
-    let out = new Uint8Array(length);
-
-    while (length--) {
-        out[length] = bytes.charCodeAt(length);
-    }
-
-    return new Blob([out], { type: 'application/pdf' });
-  }
   const fetchPdfFile = async () => {
     if(!chatID) return
     try {
@@ -444,7 +435,7 @@ export default function Home() {
 
         // Make POST request to the server to convert the file to PDF
         const response = await axios.post(
-          "https://docufill.community.saturnenterprise.io/getFile",
+          `${process.env.REACT_APP_BACKEND_URL}/getFile`,
           requestOptions,
           {
             responseType: "blob",
@@ -500,6 +491,7 @@ export default function Home() {
         const lastChat = allChats.at(-1);
         if (lastChat?.ind) setInd(lastChat?.ind + 1);
         setTitle(docSnap.data().title);
+        setPaperType(docSnap.data().type);
         // setPrompt(docSnap.data().title)
         setChats(allChats);
         if (lastChat && allChats.length < sections.length) {
@@ -533,7 +525,7 @@ export default function Home() {
     };
 
     axios
-      .post("https://docufill.community.saturnenterprise.io/downloadFile", requestOptions, {
+      .post(`${process.env.REACT_APP_BACKEND_URL}/downloadFile`, requestOptions, {
         responseType: "blob"
       })
       .then((res) => {
@@ -563,10 +555,11 @@ export default function Home() {
         <div className="flex gap-8">
           {previewed ? (
             <button
-              className="text-white border px-3 py-2 text-[1em] rounded-md"
+              className="text-white flex border px-3 py-2 text-[0.8em] items-center gap-3 font-semibold rounded-md"
               onClick={() => setPreviewed(false)}
             >
               Escape
+              <BsEscape size={22} color="white" />
             </button>
           ) : (
             <button
@@ -608,12 +601,16 @@ export default function Home() {
                 if (ind < chatMenu.length - 1) {
                   return (
                     <div
-                      className="w-[18vw] m-2 text-center py-2 text-[1.2em] cursor-pointer hover:bg-gray-800"
+                      className="w-[18vw] m-2 text-center items-center text-[1.2em] cursor-pointer flex justify-around "
                       key={chat.id}
                       aria-hidden="true"
                       onClick={() => handleChatItemClick(chat.id)}
                     >
-                      {chat.title}
+                      <div className="w-[80%] m-2 text-center py-2 hover:bg-gray-800">
+                        {chat.title}
+                      </div>
+                      <HiDotsHorizontal  size={20}/>
+
                     </div>
                   );
                 }
@@ -648,6 +645,7 @@ export default function Home() {
                 className="bg-gray-500 px-4 py-2 rounded-md"
                 onClick={() => {
                   setIsDecided(true)
+                  setPaperType("Reseach Paper")
                   setIsResearchPaper(true)
                   handleSubmit(true)
                 }}
@@ -656,6 +654,7 @@ export default function Home() {
               </button>
               <button onClick={() => {
                 setIsDecided(true)
+                setPaperType("Report")
                 setIsResearchPaper(false)
                 handleSubmit(true)
               }} className="bg-gray-500 px-4 py-2 rounded-md">Report</button>

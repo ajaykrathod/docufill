@@ -1,6 +1,5 @@
 import "./index.css";
 import "./slang/slang.css";
-import "./pages/post/Post.css";
 import "core-js/features/object/from-entries";
 import "core-js/features/object/entries";
 

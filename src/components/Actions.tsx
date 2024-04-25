@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { useIsProUser } from "../lib/hooks";
-import { ImportDataDialog } from "./ImportDataDialog";
-import { ImportDataUnauthenticatedDialog } from "./ImportDataUnauthenticatedDialog";
 import { LearnSyntaxDialog } from "./LearnSyntaxDialog";
 import { LoadTemplateDialog } from "./LoadTemplateDialog";
 import { LoadFileButton } from "./LoadFileButton";

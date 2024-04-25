@@ -13,7 +13,6 @@ import { I18n } from "./I18n";
 
 import { Trans } from "@lingui/macro";
 import { House, Recycle } from "phosphor-react";
-import { ReactQueryDevtools } from "react-query/devtools";
 import { BrowserRouter } from "react-router-dom";
 import * as Toast from "@radix-ui/react-toast";
 
@@ -25,8 +24,6 @@ pageHeight();
 
 import { PosthogWrapper } from "./PosthogWrapper";
 import Layout from "./Layout";
-import Home from "./page";
-import Login from "../pages/LogIn";
 import Router from "./Router";
 
 export default function App() {

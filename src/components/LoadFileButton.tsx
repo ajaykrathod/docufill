@@ -7,7 +7,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Content, Overlay } from "../ui/Dialog";
 import { Button2 } from "../ui/Shared";
 import { useIsProUser } from "../lib/hooks";
-import { showPaywall } from "../lib/usePaywallModalStore";
 import { getExpirationDate } from "../lib/getExpirationDate";
 import { docToString } from "../lib/useDoc";
 
@@ -70,15 +69,6 @@ export function LoadFileButton() {
         icon={FileArrowUp}
         data-testid="load-file-button"
         onClick={() => {
-          if (!isProUser) {
-            showPaywall({
-              title: t`Load Files`,
-              content: t`Experience the efficiency and security of loading local files directly into your flowchart, perfect for managing work-related documents offline. Unlock this exclusive Pro feature and more with Flowchart Fun Pro, available for only $3/month or $30/year.`,
-              movieUrl:
-                "https://res.cloudinary.com/tone-row/video/upload/v1697510980/b6u3smok1vc2jqb56tb1.mp4",
-            });
-            return;
-          }
 
           const input = document.querySelector(
             'input[data-testid="load-file-input"]'

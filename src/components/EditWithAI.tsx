@@ -9,7 +9,6 @@ import { useMutation } from "react-query";
 import * as Toast from "@radix-ui/react-toast";
 import { Microphone } from "./Microphone";
 import { useIsProUser } from "../lib/hooks";
-import { showPaywall } from "../lib/usePaywallModalStore";
 import classNames from "classnames";
 import { globalZ } from "../lib/globalZ";
 
@@ -77,14 +76,6 @@ export function EditWithAI() {
 
   const submitPrompt = useCallback(
     (prompt: string) => {
-      // if (!isProUser) {
-      //   showPaywall({
-      //     title,
-      //     content,
-      //     imgUrl: "/images/ai-edit.png",
-      //   });
-      //   return;
-      // }
 
       setIsOpen(false);
 
@@ -156,11 +147,6 @@ export function EditWithAI() {
       setTranscriptionLoading(true);
       setIsOpen(false);
     } else {
-      showPaywall({
-        title,
-        content,
-        imgUrl: "/images/ai-edit.png",
-      });
       return;
     }
   }, [isProUser]);
