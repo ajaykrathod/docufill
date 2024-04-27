@@ -9,6 +9,10 @@ import { RiChatNewFill } from "react-icons/ri";
 import { BsEscape } from "react-icons/bs";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { auth, db } from "../utils/firebase";
+import { FaShare } from "react-icons/fa6";
+import { MdDelete } from "react-icons/md";
+import { FaRegStopCircle } from "react-icons/fa";
+import { v4 as uuidv4 } from 'uuid';
 import {
   addDoc,
   collection,
@@ -16,16 +20,20 @@ import {
   getDoc,
   getDocs,
   query,
+  deleteDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
 import { getCanvas } from "./downloads";
 import { AUTH_IMG_SCALE } from "../lib/constants";
-import { GrFormView, GrFormViewHide } from "react-icons/gr";
 import { VscOpenPreview } from "react-icons/vsc";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { TbLogout } from "react-icons/tb";
 import { signOut } from "firebase/auth";
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
 
 
 const Sandbox = lazy(() => import("../pages/Sandbox"));
@@ -45,11 +53,15 @@ export default function Home() {
   const [showMenu, setShowMenu] = useState<boolean>(true);
   const [newChat, setNewChat] = useState<boolean>(true);
   const [chatID, setChatID] = useState<string>("");
+  const [chatUID, setChatUID] = useState<string>("")
   const [menuMouseEntered, setMenuMouseEntered] = useState(false);
-  const [chatMenu, setChatMenu] = useState<{ id: string; title: string }[]>([
+  const [chatInterrupted, setChatInterrupted] = useState<boolean>(false)
+  const [previousInterrupted, setPreviousInterrupted] = useState<boolean>(false)
+  const [chatMenu, setChatMenu] = useState<{ id: string; title: string; chatID:string; }[]>([
     {
       id: "",
       title: "",
+      chatID:""
     },
   ]);
   const [sections, setSections] = useState<any[][]>([
@@ -61,6 +73,7 @@ export default function Home() {
     ["Experiments", 600],
     ["Conclusion", 400],
   ]);
+  const [streaming, setStreaming] = useState<boolean>(false)
   const [ind, setInd] = useState<number>(0);
   const [chats, setChats] = useState<
     {
@@ -69,22 +82,75 @@ export default function Home() {
       diagram: boolean;
       section: string;
       ind: number;
+      interrupted:boolean;
     }[]
-  >([{ prompt: "", output: "", diagram: false, section: "", ind: 0 }]);
+  >([{ prompt: "", output: "", diagram: false, section: "", ind: 0, interrupted:false }]);
+  const [chatChosen, setChatChosen] = useState<string>("")
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>,id:string) => {
+    setAnchorEl(event.currentTarget);
+    setChatChosen(id)
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+
+  const deleteChat = async () => {
+    if(auth.currentUser?.uid){
+      await deleteDoc(doc(db, auth.currentUser.uid, chatChosen));
+      setChatMenu(prev => {
+        let prevChats = [...prev]
+        return prevChats.filter(chat => chat.id != chatChosen)
+      })
+    }
+  }
+
+
+  const interruptChat = async () => {
+    setStreaming(false)
+    setChatInterrupted(true)
+    setPreviousInterrupted(true)
+    setChats((prev) => {
+      const newChats = [...prev];
+      const lastObj = newChats[newChats.length - 1];
+      lastObj.interrupted = true;
+      return newChats;
+    });
+    const data = {
+      chatID:chatUID
+    }
+    const options = {
+      method: "POST",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+    await fetch(`${process.env.REACT_APP_BACKEND_URL}/interrupt`,options)
+  }
 
   const fetchData = async (
     section: any,
     index: number,
     msg: string,
     file_name: string,
-    token: any
+    token: any,
+    chatID:string
   ) => {
     const data = {
       section: section,
       prompt: msg,
       file_name: file_name,
       token: token,
+      chatID:chatID
     };
+
+    console.log("chatID",chatID);
+    
 
     const options = {
       method: "POST",
@@ -98,8 +164,8 @@ export default function Home() {
 
     if (response.body) {
       const reader = response.body.getReader();
+      setStreaming(true)
       let word = "";
-      let wordQueue: string[] = [];
 
       /* eslint-disable no-constant-condition */
       while (true) {
@@ -111,6 +177,8 @@ export default function Home() {
               const currWord = word;
               if (currWord == "<END>") {
                 setComplete(true);
+                setStreaming(false)
+                setPreviousInterrupted(false)
                 setChats((prev) => {
                   return [
                     ...prev,
@@ -120,20 +188,23 @@ export default function Home() {
                       diagram: false,
                       section: "",
                       ind: 0,
+                      interrupted:false
                     },
                   ];
                 });
-              } else {
+              } 
+              else {
                 setChats((prev) => {
                   const newChats = [...prev];
                   const lastObj = newChats[newChats.length - 1];
 
                   let splitOutput = lastObj.output.split(" ");
-                  if (splitOutput.at(-2) != currWord) {
+                  if (splitOutput.at(-2) != currWord && currWord != "<INTR>") {
                     lastObj.output += currWord + " ";
                   }
                   lastObj.section = sections[index][0];
                   lastObj.ind = index;
+                  lastObj.interrupted = currWord == "<INTR>" ? true : false;
                   return newChats;
                 });
               }
@@ -153,6 +224,7 @@ export default function Home() {
       querySnapshot.forEach(async (document) => {
         setChatID(document.id);
         await updateDoc(doc(db, authID, document.id), {
+          complete:chats.at(-1)?.section == "Conclusion",
           chat: chats,
         });
       });
@@ -168,6 +240,7 @@ export default function Home() {
       {
         id: "",
         title: "",
+        chatID:""
       },
     ]);
     const currUserUID = localStorage.getItem("UID");
@@ -183,7 +256,8 @@ export default function Home() {
           } else {
             lastObj.id = doc.id;
             lastObj.title = doc.data().title;
-            newChats.push({ id: "", title: "" });
+            lastObj.chatID = doc.data().chatID;
+            newChats.push({ id: "", title: "",chatID:"" });
             return newChats;
           }
         });
@@ -258,6 +332,7 @@ export default function Home() {
             diagram: false,
             section: "",
             ind: -1,
+            interrupted:false
           });
           return newChats;
         });
@@ -270,24 +345,33 @@ export default function Home() {
 
   const handleSubmit = async (
     tempDecided:boolean = false,
+    type:string="",
     tempPrompt: string = "",
     tempInd: number = -1,
     existingChat: boolean = false
   ) => {
+    if(!prompt && !tempPrompt) return
     if(!tempDecided && !isDecided) {
       setPromptSubmitted(true)
       return
     }
+
+    let idChat:string = ""
     
     if (!existingChat && newChat) {
       // setChatID(chatUID)
       if (auth.currentUser?.uid) {
+        let chatUID = uuidv4()
         const docRef = await addDoc(collection(db, auth.currentUser.uid), {
           title: prompt,
+          chatUID:chatUID,
           lastUpdated: Date.now(),
-          type: (tempDecided || isDecided) && isResearchPaper ? "Research Paper" : "Report" ,
+          type: (tempDecided || isDecided) && type ,
+          complte:false,
           chat: []
         });
+        setChatUID(chatUID);
+        idChat = chatUID
         setChatID(docRef.id);
       }
       setNewChat(false);
@@ -295,7 +379,7 @@ export default function Home() {
     }
     let msg = prompt ? prompt : tempPrompt;
     let index = tempInd > -1 ? tempInd : ind;
-
+    if(!idChat) idChat = chatUID
     if (index < sections.length) {
       if (sections[index][0] == "Diagram") {
         setInd(index + 1);
@@ -310,21 +394,26 @@ export default function Home() {
       newChats[newChats.length - 1].prompt = msg;
       setChats(newChats);
       setPrompt("");
-      await fetchData(
-        sections[index][0].replaceAll(" ", ""),
-        ind,
-        `Generate ${sections[index][0]} on ${title ? title : prompt}`,
-        `${
-          title ? title.replaceAll(" ", "") : prompt.replaceAll(" ", "")
-        }.docx`,
-        sections[index][1]
-      );
-      setInd((prev) => prev + 1);
+      if((title.length > 0 || prompt.length > 0) && idChat.length > 0){
+        await fetchData(
+          sections[index][0].replaceAll(" ", ""),
+          ind,
+          `Generate ${sections[index][0]} on ${title ? title : prompt}`,
+          `${
+            title ? title.replaceAll(" ", "") : prompt.replaceAll(" ", "")
+          }.docx`,
+          sections[index][1],
+          idChat
+        );
+        setInd((prev) => prev + 1);
+      }
     }
   };
 
   const handleSatisfied = (e: MouseEvent<HTMLButtonElement>) => {
     setComplete(false);
+    setStreaming(true)
+    setChatInterrupted(false)
     handleSubmit();
   };
 
@@ -459,7 +548,16 @@ export default function Home() {
     }
   };
 
-  const handleNewPaper = () => {
+  const handleNewPaper = async() => {
+    const authID = auth.currentUser?.uid
+
+    if(streaming && authID){
+      await updateDoc(doc(db, authID, chatID), {
+        complete:false,
+        chat: chats,
+      });
+    }
+    setStreaming(false)
     setNewChat(true);
     setChats([
       {
@@ -468,12 +566,22 @@ export default function Home() {
         prompt: "",
         ind: 0,
         section: "",
+        interrupted:false
       },
     ]);
     setChatID("");
   };
 
   const handleChatItemClick = async (id: string) => {
+    const authID = auth.currentUser?.uid
+
+    if(streaming && authID){
+      await updateDoc(doc(db, authID, chatID), {
+        complete:false,
+        chat: chats,
+      });
+    }
+    setStreaming(false)
     if (auth.currentUser?.uid) {
       const docSnap = await getDoc(doc(db, auth.currentUser?.uid, id));
 
@@ -484,24 +592,29 @@ export default function Home() {
           diagram: boolean;
           section: string;
           ind: number;
+          interrupted:boolean;
         }[] = docSnap.data().chat;
-        setNewChat(false);
-        setChatID(docSnap.id);
-
-        const lastChat = allChats.at(-1);
-        if (lastChat?.ind) setInd(lastChat?.ind + 1);
         setTitle(docSnap.data().title);
         setPaperType(docSnap.data().type);
+        setNewChat(false);
+        setChatID(docSnap.id);
+        setChatUID(docSnap.data().chatUID)
+
+        const lastChat = allChats.at(-1);
+        if(lastChat?.interrupted){
+          setPreviousInterrupted(true)
+        }
+        if (lastChat?.ind) setInd(lastChat?.ind + 1);
         // setPrompt(docSnap.data().title)
         setChats(allChats);
-        if (lastChat && allChats.length < sections.length) {
+        if (lastChat && allChats.length < sections.length && !lastChat.interrupted) {
           setChats((prev) => {
             return [
               ...prev,
-              { prompt: "", output: "", diagram: false, section: "", ind: 0 },
+              { prompt: "", output: "", diagram: false, section: "", ind: 0,interrupted:false },
             ];
           });
-          handleSubmit(true,docSnap.data().title, lastChat.ind + 1, true);
+          handleSubmit(true,"",docSnap.data().title, lastChat.ind + 1, true);
         }
       }
     }
@@ -540,6 +653,27 @@ export default function Home() {
     })
   };
 
+  const continueChat = () => {
+    setChats((prev) => {
+      const newChats = [...prev];
+      let lastChat = newChats.at(-1)
+      if(lastChat){
+        lastChat.output = ""
+        lastChat.interrupted = false
+      }
+      return newChats
+    });
+    const lastChat = chats.at(-1)
+    
+    
+    if(lastChat){
+      handleSubmit(true,paperType,title, lastChat.ind, true);
+    }
+    setPreviousInterrupted(false)
+  }
+
+
+
   const logout = async() => {
     await signOut(auth)
     localStorage.removeItem("UID")
@@ -563,6 +697,7 @@ export default function Home() {
             </button>
           ) : (
             <button
+              disabled={chatID ? false:true}
               className="text-white flex border px-3 py-2 text-[0.8em] items-center gap-2 font-semibold rounded-md"
               onClick={fetchPdfFile}
             >
@@ -570,7 +705,7 @@ export default function Home() {
               <VscOpenPreview size={22} color="white" />
             </button>
           )}
-          <button onClick={donwloadFile}>
+          <button onClick={donwloadFile} disabled={chatID ? false:true}>
             <MdOutlineFileDownload size={25} color="white" />
           </button>
           <button onClick={logout}>
@@ -604,13 +739,62 @@ export default function Home() {
                       className="w-[18vw] m-2 text-center items-center text-[1.2em] cursor-pointer flex justify-around "
                       key={chat.id}
                       aria-hidden="true"
-                      onClick={() => handleChatItemClick(chat.id)}
                     >
-                      <div className="w-[80%] m-2 text-center py-2 hover:bg-gray-800">
+                      <div aria-hidden="true" className="w-[80%] m-2 text-center py-2" 
+                      onClick={() => handleChatItemClick(chat.id)}>
                         {chat.title}
                       </div>
-                      <HiDotsHorizontal  size={20}/>
-
+                      <div role="presentation"  onClick={(e)=> handleClick(e,chat.id)}>
+                        <HiDotsHorizontal size={20}/>
+                      </div>
+                      <Menu
+                              anchorEl={anchorEl}
+                              id="account-menu"
+                              open={open}
+                              onClose={handleClose}
+                              onClick={handleClose}
+                              PaperProps={{
+                                elevation: 0,
+                                sx: {
+                                  overflow: 'visible',
+                                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                  mt: 1.5,
+                                  '& .MuiAvatar-root': {
+                                    width: 32,
+                                    height: 32,
+                                    ml: -0.5,
+                                    mr: 1,
+                                  },
+                                  '&::before': {
+                                    content: '""',
+                                    display: 'block',
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 14,
+                                    width: 10,
+                                    height: 10,
+                                    bgcolor: 'background.paper',
+                                    transform: 'translateY(-50%) rotate(45deg)',
+                                    zIndex: 0,
+                                  },
+                                },
+                              }}
+                              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                            >
+                              <MenuItem onClick={deleteChat}>
+                                <ListItemIcon>
+                                  <MdDelete  />
+                                </ListItemIcon>
+                                Delete Chat
+                              </MenuItem>
+                              {/* <MenuItem onClick={handleClose}>
+                                <ListItemIcon>
+                                  <FaShare />
+                                </ListItemIcon>
+                                Share
+                              </MenuItem> */}
+                            </Menu>
                     </div>
                   );
                 }
@@ -647,7 +831,7 @@ export default function Home() {
                   setIsDecided(true)
                   setPaperType("Reseach Paper")
                   setIsResearchPaper(true)
-                  handleSubmit(true)
+                  handleSubmit(true,"Reseach Paper")
                 }}
               >
                 Research Paper
@@ -656,7 +840,7 @@ export default function Home() {
                 setIsDecided(true)
                 setPaperType("Report")
                 setIsResearchPaper(false)
-                handleSubmit(true)
+                handleSubmit(true,"Report")
               }} className="bg-gray-500 px-4 py-2 rounded-md">Report</button>
             </div>
           )}
@@ -672,6 +856,18 @@ export default function Home() {
               setChats={setChats}
             />
           ))}
+          {previousInterrupted && (
+            <div className="flex gap-3 items-center">
+              Complete Previous Chat Or Skip
+              <button
+                className="bg-gray-500 px-4 py-2 rounded-md"
+                onClick={continueChat}
+              >
+                Complete
+              </button>
+              <button className="bg-gray-500 px-4 py-2 rounded-md" onClick={handleSatisfied}>Skip</button>
+            </div>
+          )}
           {complete && (
             <div className="flex gap-3 items-center">
               Is this helpful
@@ -698,9 +894,9 @@ export default function Home() {
         <button
           disabled={complete}
           className="absolute bottom-10 right-[38vw] rounded-full h-[5vh] p-3 w-10"
-          onClick={() => handleSubmit()}
+          onClick={() => streaming ? interruptChat() : handleSubmit()}
         >
-          <BiSolidSend size={30} />
+          {streaming ? <FaRegStopCircle size={30}/> : <BiSolidSend size={30} />}
         </button>
       </div>
     </main>

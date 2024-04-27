@@ -17,7 +17,7 @@ type props = {
   diagram:boolean;
   ind: number;
   chatID:string;
-  setChats: Dispatch<SetStateAction<{ prompt: string; output: string, diagram:boolean,section:string,ind:number }[]>>;
+  setChats: Dispatch<SetStateAction<{ prompt: string; output: string, diagram:boolean,section:string,ind:number,interrupted:boolean }[]>>;
 };
 
 function ChatComponent(props: props) {
